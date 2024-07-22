@@ -1,5 +1,5 @@
 import streamlit as st
-from openai import OpenAI
+import openai
 import os
 from dotenv import load_dotenv
 import pandas as pd
@@ -10,7 +10,7 @@ import io
 load_dotenv()
 
 # Access the environment variable
-api_key = os.getenv('OPENAI_API_KEY')
+openai.api_key = os.getenv('OPENAI_API_KEY')
 
 if api_key is None:
     st.error("OpenAI API key not found. Please set the OPENAI_API_KEY environment variable.")
