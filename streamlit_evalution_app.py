@@ -14,12 +14,14 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 
 # Function to validate the business idea using OpenAI API
 def validate_idea(idea):
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=f"Validate the following business idea: {idea}",
-        max_tokens=150
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": f"Validate the following business idea: {idea}"}
+        ]
     )
-    return response.choices[0].text.strip()
+    return response.choices[0].message['content'].strip()
 
 # Function to read the content of uploaded file
 def read_file_content(uploaded_file):
