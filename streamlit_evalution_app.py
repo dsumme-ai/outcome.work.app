@@ -46,4 +46,20 @@ st.title("Outcome Work")
 st.write("Validate your business idea, and move forward with confidence.")
 
 # Option to upload a file
-uploaded_file = st.file_uploader("Upload a file containing your business idea", type=["txt", "
+uploaded_file = st.file_uploader("Upload a file containing your business idea", type=["txt", "csv", "xlsx", "png", "jpg", "jpeg"])
+
+# Text input for business idea
+idea = st.text_area("Or, enter your business idea here")
+
+# Validate the idea from file or text input
+if st.button("Validate Idea"):
+    if uploaded_file is not None:
+        # Read the uploaded file content
+        idea = read_file_content(uploaded_file)
+    
+    if idea:
+        validation_result = validate_idea(idea)
+        st.subheader("Validation Result")
+        st.write(validation_result)
+    else:
+        st.error("Please enter a business idea or upload a file containing it.")
