@@ -21,7 +21,7 @@ def validate_idea(idea, model="gpt-3.5-turbo"):
             {"role": "user", "content": f"Validate the following business idea: {idea}"}
         ]
     )
-    return response.choices[0].message['content'].strip()
+    return response['choices'][0]['message']['content'].strip()
 
 # Function to read the content of uploaded file
 def read_file_content(uploaded_file):
