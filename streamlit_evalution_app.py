@@ -1,5 +1,5 @@
 import streamlit as st
-import openai
+from openai import OpenAI
 import os
 from dotenv import load_dotenv
 import pandas as pd
@@ -10,18 +10,24 @@ import io
 load_dotenv()
 
 # Access the environment variable
-openai.api_key = os.getenv('OPENAI_API_KEY')
+api_key = os.getenv('OPENAI_API_KEY')
+
+if api_key is None:
+    st.error("OpenAI API key not found. Please set the OPENAI_API_KEY environment variable.")
+    st.stop()
+
+# Initialize OpenAI client
+client = OpenAI(api_key=api_key)
 
 # Function to validate the business idea using a custom GPT model
-def validate_idea(idea, model="gpt-3.5-turbo"):
-    response = openai.ChatCompletion.create(
+def validate_idea(idea, model="gpt-3.5-turbo-instruct"):
+    response = client.completions.create(
         model=model,
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": f"Validate the following business idea: {idea}"}
-        ]
+        prompt=f"Validate the following business idea: {idea}",
+        max_tokens=150,
+        temperature=0
     )
-    return response['choices'][0]['message']['content'].strip()
+    return response.choices[0].text.strip()
 
 # Function to read the content of uploaded file
 def read_file_content(uploaded_file):
