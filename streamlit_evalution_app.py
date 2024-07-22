@@ -1,5 +1,5 @@
 import streamlit as st
-import openai
+from openai import OpenAI
 import os
 from dotenv import load_dotenv
 import pandas as pd
@@ -10,14 +10,14 @@ import io
 load_dotenv()
 
 # Access the environment variable
-openai.api_key = os.getenv('OPENAI_API_KEY')
+api_key = os.getenv('OPENAI_API_KEY')  # Correctly access the API key
 
-if api_key is None:
+if api_key is None:  # Check the existence of the API key
     st.error("OpenAI API key not found. Please set the OPENAI_API_KEY environment variable.")
     st.stop()
 
 # Initialize OpenAI client
-client = OpenAI(api_key=api_key)
+client = OpenAI(api_key=api_key)  # Initialize the OpenAI client
 
 # Function to validate the business idea using a custom GPT model
 def validate_idea(idea, model="gpt-3.5-turbo-instruct"):
