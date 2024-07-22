@@ -42,4 +42,30 @@ def get_evaluation(idea):
     except requests.exceptions.RequestException as req_err:
         st.error(f"Error occurred: {req_err}")
     except ValueError as json_err:
-        st.error(f"JSON
+        st.error(f"JSON decode error: {json_err}")
+    return None
+
+# Function to format the results
+def format_results(results):
+    st.subheader("Evaluation Results")
+    for section in results.get('sections', []):
+        st.markdown(f"### {section['title']}")
+        st.markdown(f"<h2 style='font-size:36px; color:blue;'>{section['score']}</h2>", unsafe_allow_html=True)
+        st.write(section['content'])
+        st.markdown("---")
+
+# Streamlit app layout
+st.title("Business Idea Evaluation")
+st.write("Validate your business idea and get detailed feedback.")
+
+# Text input for business idea
+idea = st.text_area("Enter your business idea here")
+
+# Validate the idea
+if st.button("Evaluate Idea"):
+    if idea:
+        evaluation_results = get_evaluation(idea)
+        if evaluation_results:
+            format_results(evaluation_results)
+    else:
+        st.error("Please enter a business idea.")
