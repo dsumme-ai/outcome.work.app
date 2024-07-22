@@ -1,71 +1,57 @@
 import streamlit as st
-from openai import OpenAI
+import requests
 import os
 from dotenv import load_dotenv
-import pandas as pd
-from PIL import Image
-import io
 
 # Load environment variables from .env file if present
 load_dotenv()
 
-# Access the environment variable
-api_key = os.getenv('OPENAI_API_KEY')  # Correctly access the API key
+# Access the environment variable for API key if needed
+api_key = os.getenv('API_KEY')  # Replace 'API_KEY' with the actual key if needed
 
-if api_key is None:  # Check the existence of the API key
-    st.error("OpenAI API key not found. Please set the OPENAI_API_KEY environment variable.")
-    st.stop()
-
-# Initialize OpenAI client
-client = OpenAI(api_key=api_key)  # Initialize the OpenAI client
-
-# Function to validate the business idea using a custom GPT model
-def validate_idea(idea, model="gpt-3.5-turbo-instruct"):
-    response = client.completions.create(
-        model=model,
-        prompt=f"Validate the following business idea: {idea}",
-        max_tokens=150,
-        temperature=0
-    )
-    return response.choices[0].text.strip()
-
-# Function to read the content of uploaded file
-def read_file_content(uploaded_file):
-    file_type = uploaded_file.type
-    if file_type == "text/plain":
-        content = uploaded_file.read().decode("utf-8")
-    elif file_type == "text/csv":
-        df = pd.read_csv(uploaded_file)
-        content = df.to_string()
-    elif file_type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
-        df = pd.read_excel(uploaded_file)
-        content = df.to_string()
-    elif "image" in file_type:
-        image = Image.open(io.BytesIO(uploaded_file.read()))
-        content = "Image uploaded successfully. Note: Image analysis is not yet supported."
+# Function to get evaluation from custom GPT endpoint
+def get_evaluation(idea):
+    url = "https://chatgpt.com/g/g-uN3d1mxV6-vc-evaluation-model"
+    headers = {
+        "Authorization": f"Bearer {api_key}"  # Replace with the required header if needed
+    }
+    data = {
+        "model": "gpt-3.5-turbo-instruct",
+        "prompt": f"Evaluate the following business idea: {idea}",
+        "max_tokens": 150,
+        "temperature": 0
+    }
+    response = requests.post(url, headers=headers, json=data)
+    if response.status_code == 200:
+        return response.json()
     else:
-        content = None
-    return content
+        st.error("Failed to get response from the API.")
+        return None
+
+# Function to format the results
+def format_results(results):
+    st.subheader("Evaluation Results")
+    for section in results.get('sections', []):
+        st.markdown(f"### {section['title']}")
+        st.markdown(f"<h2 style='font-size:36px; color:blue;'>{section['score']}</h2>", unsafe_allow_html=True)
+        st.write(section['content'])
+        st.markdown("---")
 
 # Streamlit app layout
-st.title("Outcome Work")
-st.write("Validate your business idea, and move forward with confidence.")
-
-# Option to upload a file
-uploaded_file = st.file_uploader("Upload a file containing your business idea", type=["txt", "csv", "xlsx", "png", "jpg", "jpeg"])
+st.title("Business Idea Evaluation")
+st.write("Validate your business idea and get detailed feedback.")
 
 # Text input for business idea
-idea = st.text_area("Or, enter your business idea here")
+idea = st.text_area("Enter your business idea here")
 
-# Validate the idea from file or text input
-if st.button("Validate Idea"):
-    if uploaded_file is not None:
-        # Read the uploaded file content
-        idea = read_file_content(uploaded_file)
-    
+# Validate the idea
+if st.button("Evaluate Idea"):
     if idea:
-        validation_result = validate_idea(idea)
-        st.subheader("Validation Result")
-        st.write(validation_result)
+        evaluation_results = get_evaluation(idea)
+        if evaluation_results:
+            format_results(evaluation_results)
     else:
-        st.error("Please enter a business idea or upload a file containing it.")
+        st.error("Please enter a business idea.")
+
+# To run the Streamlit app, use the command:
+# streamlit run app.py
