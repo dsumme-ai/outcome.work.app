@@ -1,11 +1,16 @@
 import streamlit as st
 import openai
+import os
+from dotenv import load_dotenv
 import pandas as pd
 from PIL import Image
-# import io
+import io
 
-# Set up the OpenAI API key
-openai.api_key = 'your_openai_api_key'  # Replace with your actual OpenAI API key
+# Load environment variables from .env file if present
+load_dotenv()
+
+# Access the environment variable
+openai.api_key = os.getenv('OPENAI_API_KEY')
 
 # Function to validate the business idea using OpenAI API
 def validate_idea(idea):
@@ -18,24 +23,25 @@ def validate_idea(idea):
 
 # Function to read the content of uploaded file
 def read_file_content(uploaded_file):
-    if uploaded_file.type == "text/plain":
+    file_type = uploaded_file.type
+    if file_type == "text/plain":
         content = uploaded_file.read().decode("utf-8")
-    elif uploaded_file.type == "text/csv":
+    elif file_type == "text/csv":
         df = pd.read_csv(uploaded_file)
         content = df.to_string()
-    elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+    elif file_type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
         df = pd.read_excel(uploaded_file)
         content = df.to_string()
-    elif "image" in uploaded_file.type:
-        image = Image.open(uploaded_file)
-        content = "Image uploaded successfully."
+    elif "image" in file_type:
+        image = Image.open(io.BytesIO(uploaded_file.read()))
+        content = "Image uploaded successfully. Note: Image analysis is not yet supported."
     else:
         content = None
     return content
 
 # Streamlit app layout
-st.title("Business Idea Validator")
-st.write("Enter your business idea below, or upload a file containing your idea (text, CSV, Excel, image), and we'll validate it using OpenAI's GPT-3 model.")
+st.title("Outcome Work")
+st.write("Validate your business idea, and move forward with confidence.")
 
 # Option to upload a file
 uploaded_file = st.file_uploader("Upload a file containing your business idea", type=["txt", "csv", "xlsx", "png", "jpg", "jpeg"])
@@ -55,7 +61,3 @@ if st.button("Validate Idea"):
         st.write(validation_result)
     else:
         st.error("Please enter a business idea or upload a file containing it.")
-
-# Run the Streamlit app (this line is for local execution)
-# if __name__ == "__main__":
-#     st.run()
