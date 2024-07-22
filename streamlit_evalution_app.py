@@ -2,7 +2,7 @@ import streamlit as st
 import openai
 import pandas as pd
 from PIL import Image
-import io
+# import io
 
 # Set up the OpenAI API key
 openai.api_key = 'your_openai_api_key'  # Replace with your actual OpenAI API key
